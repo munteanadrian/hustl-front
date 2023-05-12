@@ -1,15 +1,14 @@
-# Expo Router Example
+![Screenshot](https://i.imgur.com/E3JfzAk.png)
 
-Use [`expo-router`](https://expo.github.io/router) to build native navigation using files in the `app/` directory.
 
-## 🚀 How to use
+# Hustl
 
-```sh
-npx create-react-native-app -t with-router
-```
+A cross-platform social media application, providing young adults with a modern alternative to networking. This is the largest and most complex project and I am currently working on it.
+## Features
 
-## 📝 Notes
-
-- [Expo Router: Docs](https://expo.github.io/router)
-- [Expo Router: Repo](https://github.com/expo/router)
-- [Request for Comments](https://github.com/expo/router/discussions/1)
+- React Native with Native Wind and Legend-Motion
+- Cross-platform (Android/iOS/Web)
+- Uses Axios to send RESTful requests to the backend
+- Spring Web with an MVC architecture
+- Spring Data JPA for handling CRUD operations on MYSQL database
+- User authentication, location-based matchmaking, chat, settings
