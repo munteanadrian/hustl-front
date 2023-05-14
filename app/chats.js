@@ -78,7 +78,7 @@ const Chats = () => {
 
       const options = {
         method: "GET",
-        url: "http://192.168.194.8:8080/api/user/",
+        url: "http://192.168.0.73:8080/api/user/",
         headers: {
           Authorization: `Bearer ${token}`,
         },

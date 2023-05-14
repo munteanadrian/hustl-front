@@ -90,7 +90,7 @@ const Signup = () => {
 
     const options = {
       method: "POST",
-      url: "http://192.168.194.8:8080/api/auth/signup", // https
+      url: "http://192.168.0.73:8080/api/auth/signup", // https
       headers: {
         "Content-Type": "application/json",
       },
@@ -114,7 +114,7 @@ const Signup = () => {
 
           const loginOptions = {
             method: "POST",
-            url: "http://192.168.194.8:8080/api/auth/login", // https
+            url: "http://192.168.0.73:8080/api/auth/login", // https
             headers: {
               "Content-Type": "application/json",
             },

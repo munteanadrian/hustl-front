@@ -1,25 +1,31 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
-import { SafeAreaView, Text, Dimensions, RefreshControl } from "react-native";
+import {
+  SafeAreaView,
+  Text,
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  ActivityIndicator,
+  View,
+  TouchableOpacity,
+} from "react-native";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 import Navbar from "./components/navbar";
-import { ScrollView } from "react-native";
 import Popular from "./components/popular";
 import Groups from "./components/groups";
+import Search from "./components/search";
 
-// TODO: Layout: images, icons (maybe remove profile and merge into settings but keep profile as icon), logo on top, person's info
-// TODO: Fetch data from backend (maybe load 10 profiles and load 5 more every time 5 are swiped) - use Carousel
-// TODO: Single navigation bar at the bottom shared between all screens instead of 4 different ones, remember current page (maybe use Context API)
-// TODO: Send a post request every time a user swipes left or right - for optimization maybe fetch the current half-swipes, show a match or set the data and sent it asynchrounously in the background with the current progress: user loads 5-10 profiles and frontend knows if the people loaded swiped or not on the current user, if they did then it shows the match popup and every X seconds when it updates the next data it also sends the current progress to the backend
+import colors from "./../constants/colors";
 
 const MainScreen = () => {
   const router = useRouter();
   const { height, width } = Dimensions.get("window");
-  const [name, setName] = useState("");
 
+  // Handle page refresh
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -29,24 +35,73 @@ const MainScreen = () => {
     }, 1000);
   }, []);
 
+  // #region Fetch data from backend (on refresh and on load)
+  const [loading, setLoading] = useState(false);
+
+  const [name, setName] = useState("");
+
+  const randomColor = () => {
+    const keys = Object.keys(colors);
+    return colors[keys[(keys.length * Math.random()) << 0]];
+  };
+
+  const [popular, setPopular] = useState([]);
+  const [myCommunities, setMyCommunities] = useState([]);
+
+  const deserializeCommunity = (data) => {
+    const communities = [];
+
+    data.forEach((community) => {
+      communities.push({
+        id: community.communityId,
+        title: community.name,
+        type: "TYPE",
+        members: "TYPE",
+
+        cardColor: randomColor(),
+        image: require("./../assets/nycBg.jpg"),
+      });
+    });
+
+    return communities;
+  };
+
   const fetchData = async () => {
+    setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
 
-      const options = {
+      const profileRequestOptions = {
         method: "GET",
-        url: "http://192.168.194.8:8080/api/user/",
+        url: "http://192.168.0.73:8080/api/user/",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
+      const profileResponse = await axios(profileRequestOptions);
+      setName(profileResponse.data.name);
 
-      const response = await axios(options);
+      const popularRequestOptions = {
+        method: "GET",
+        url: "http://192.168.0.73:8080/api/community/",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const popularResponse = await axios(popularRequestOptions);
+      setPopular(deserializeCommunity(popularResponse.data));
 
-      setName(response.data.name);
+      const myRequestOptions = {
+        method: "GET",
+        url: "http://192.168.0.73:8080/api/membership/",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const myResponse = await axios(myRequestOptions);
+      setMyCommunities(deserializeCommunity(myResponse.data));
 
-      console.log(token);
-      console.log(name);
+      setLoading(false);
     } catch (e) {
       console.log(e);
     }
@@ -55,37 +110,78 @@ const MainScreen = () => {
   useEffect(() => {
     fetchData();
   }, []);
+  // #endregion
+
+  const createCommunity = async () => {
+    const token = await AsyncStorage.getItem("token");
+    const config = {
+      method: "POST",
+      url: "http://192.168.0.73:8080/api/community/",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data: {
+        name: "Comunitatea 2",
+      },
+    };
+    const response = await axios(config);
+
+    if (response.status === 200) {
+      // join community too, create it with the current user in it on the backend
+      // refresh
+      onRefresh();
+    } else {
+      console.log("error creating community");
+    }
+  };
 
   return (
-    <SafeAreaView style={{ flex: 1, width: width }} className="bg-white">
-      <ScrollView
-        style={{
-          flex: 1,
-          paddingHorizontal: 20,
-          height: height * 0.85,
-          width: width,
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            progressViewOffset={20}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        <Text className="text-3xl font-bol text-midnight pt-20">
-          Welcome, <Text className="font-bold text-alizarin">{name}</Text>
-        </Text>
-        <Text className="tracking-wider leading-5 text-concrete">
-          Lorem ipsum dolor sit amet consectetur elit.
-        </Text>
+    <SafeAreaView style={{ flex: 1, width: width, backgroundColor: "#FFFFFF" }}>
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#e74c3c" />
+          <Text className="text-center">Loading...</Text>
+        </View>
+      ) : (
+        <ScrollView
+          style={{
+            flex: 1,
+            paddingHorizontal: 20,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              progressViewOffset={10}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          <Search />
+          <Text className="text-3xl font-semibold text-midnight">
+            Hello there, <Text className="font-bold text-alizarin">{name}</Text>
+          </Text>
+          <Text className="tracking-wider leading-8 text-concrete">
+            Get ready to meet new people and make friends
+          </Text>
 
-        <Popular />
-        <Groups />
-      </ScrollView>
+          <TouchableOpacity
+            className="bg-alizarin items-center justify-center mt-2 rounded-lg"
+            onPress={() => createCommunity()}
+          >
+            <Text className="text-white py-4 text-lg font-semibold">
+              Start a community
+            </Text>
+          </TouchableOpacity>
 
-      <Navbar />
+          <Popular cards={popular} refresh={onRefresh} />
+          <Groups cards={myCommunities} />
+
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      )}
+
+      {loading ? null : <Navbar active={"home"} />}
     </SafeAreaView>
   );
 };

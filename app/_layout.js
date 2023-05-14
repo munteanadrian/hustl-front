@@ -30,9 +30,10 @@ const Layout = () => {
     <Stack screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
         <Tabs>
-          <Tabs.Screen name="mainscreen" />
+          <Tabs.Screen name="[chat]" />
           <Tabs.Screen name="chats" />
           <Tabs.Screen name="profile" />
+          <Tabs.Screen name="mainscreen" />
         </Tabs>
       ) : (
         <>
