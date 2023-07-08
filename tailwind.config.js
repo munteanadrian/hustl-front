@@ -1,7 +1,11 @@
 // tailwind.config.js
 
 module.exports = {
-  content: ["./App.{js,jsx,ts,tsx}", "./app/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./App.{js,jsx}",
+    "./app/**/*.{js,jsx}",
+    "./constants/**/*.{js, jsx}",
+  ],
   theme: {
     extend: {
       colors: {
@@ -36,11 +40,6 @@ module.exports = {
 
         concrete: "#95a5a6",
         asbestos: "#7f8c8d",
-      },
-      fontFamily: {
-        Regular: ["DMSans-Regular"],
-        Medium: ["DMSans-Medium"],
-        Bold: ["DMSans-Bold"],
       },
     },
   },
